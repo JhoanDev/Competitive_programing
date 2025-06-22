@@ -11,7 +11,7 @@ void check_block_distribution(int *local_data, int local_size, int my_rank, int 
 
 int main(int argc, char *argv[])
 {
-    int my_rank, comm_sz, size_data, rest, local_size_data, i, chunk, j;
+    int my_rank, comm_sz, size_data, rest, local_size_data, i, chunk, j, c, offset;
     int *global_data = NULL, *local_data = NULL, *send_counts = NULL, *displs = NULL;
     double start_time, end_time, elapsed_time;
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         MPI_Finalize();
         exit(1);
     }
-
+    // espalhando em bloco
     chunk = size_data / comm_sz;
     rest = size_data % comm_sz;
     local_size_data = chunk + (my_rank < rest);
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
         send_counts = (int *)malloc(comm_sz * sizeof(int));
         displs = (int *)malloc(comm_sz * sizeof(int));
 
-        int offset = 0;
+        offset = 0;
         for (i = 0; i < comm_sz; i++)
         {
             send_counts[i] = chunk + (i < rest);
@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
 
     MPI_Scatterv(global_data, send_counts, displs, MPI_INT, local_data, local_size_data, MPI_INT, 0, comm);
     MPI_Barrier(comm);
+    // iniciando a juntar e redistribuir ciclicamente
     start_time = MPI_Wtime();
 
     MPI_Gatherv(local_data, local_size_data, MPI_INT, global_data, send_counts, displs, MPI_INT, 0, comm);
@@ -77,7 +78,7 @@ int main(int argc, char *argv[])
     {
         for (i = 0; i < comm_sz; i++)
         {
-            int c = chunk + (i < rest ? 1 : 0);
+            c = chunk + (i < rest ? 1 : 0);
 
             MPI_Datatype cyclic_type;
             MPI_Type_vector(c, 1, comm_sz, MPI_INT, &cyclic_type);
@@ -86,22 +87,17 @@ int main(int argc, char *argv[])
             if (i == 0)
             {
                 for (j = 0; j < c; j++)
-                {
                     local_data[j] = global_data[j * comm_sz];
-                }
             }
             else
-            {
                 MPI_Send(global_data + i, 1, cyclic_type, i, i, comm);
-            }
 
             MPI_Type_free(&cyclic_type);
         }
     }
     else
-    {
         MPI_Recv(local_data, local_size_data, MPI_INT, 0, my_rank, comm, MPI_STATUS_IGNORE);
-    }
+    
 
     end_time = MPI_Wtime();
 
@@ -116,12 +112,10 @@ int main(int argc, char *argv[])
         printf("\nPara ir de uma distribuicao statica para ciclica demorou: %.5lfs\n", elapsed_time);
     }
 
-    MPI_Barrier(comm);
     check_cyclic_distribution(local_data, local_size_data, my_rank, comm_sz);
     MPI_Barrier(comm);
-
+    // juntando para ficar na orden inicial
     start_time = MPI_Wtime();
-
     if (my_rank == 0)
     {
         MPI_Datatype *recv_types = (MPI_Datatype *)malloc(comm_sz * sizeof(MPI_Datatype));
@@ -166,12 +160,10 @@ int main(int argc, char *argv[])
         free(recv_types);
     }
     else
-    {
         MPI_Send(local_data, local_size_data, MPI_INT, 0, my_rank, comm);
-    }
 
+    // redistribuindo em blocos
     MPI_Scatterv(global_data, send_counts, displs, MPI_INT, local_data, local_size_data, MPI_INT, 0, comm);
-
     end_time = MPI_Wtime();
 
     MPI_Reduce(&start_time, &global_start_time, 1, MPI_DOUBLE, MPI_MIN, 0, comm);
@@ -183,9 +175,7 @@ int main(int argc, char *argv[])
         printf("\nPara ir de uma distribuicao ciclica para statica demorou: %.5lfs\n", elapsed_time);
     }
 
-    MPI_Barrier(comm);
     check_block_distribution(local_data, local_size_data, my_rank, comm_sz, size_data);
-    MPI_Barrier(comm);
 
     if (my_rank == 0)
     {

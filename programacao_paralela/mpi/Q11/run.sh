@@ -1,7 +1,7 @@
 #!/bin/bash
-NP=4
+NP=8
 EXEC=main
-SIZE=10
+SIZE=323456789
 
 make clean && make
 mpirun -np $NP ./$EXEC $SIZE 
