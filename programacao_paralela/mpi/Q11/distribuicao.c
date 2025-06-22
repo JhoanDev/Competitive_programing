@@ -7,6 +7,7 @@
 
 void gen_data(int *array, int size);
 int is_cyclic_distribution(int *local_data, int local_size, int my_rank, int comm_sz);
+int is_block_distribution(int *local_data, int local_size, int my_rank, int comm_sz, int size_data);
 
 int main(int argc, char *argv[])
 {
@@ -122,7 +123,83 @@ int main(int argc, char *argv[])
     else
         printf("Processo %d: Distribuição cíclica incorreta.\n", my_rank);
 
-    if (my_rank = 0)
+    MPI_Barrier(comm);
+    start_time = MPI_Wtime();
+
+    if (my_rank == 0)
+    {
+        MPI_Datatype *recv_types = (MPI_Datatype *)malloc(comm_sz * sizeof(MPI_Datatype));
+        if (recv_types == NULL)
+        {
+            fprintf(stderr, "Process 0: Memory allocation error for recv_types.\n");
+            MPI_Abort(comm, 1);
+        }
+
+        for (i = 0; i < comm_sz; i++)
+        {
+            int current_rank_local_size = chunk + (i < rest);
+            int *blocklengths = (int *)malloc(current_rank_local_size * sizeof(int));
+            int *displacements = (int *)malloc(current_rank_local_size * sizeof(int));
+
+            if (blocklengths == NULL || displacements == NULL)
+            {
+                fprintf(stderr, "Process 0: Memory allocation error for blocklengths/displacements for rank %d.\n", i);
+                MPI_Abort(comm, 1);
+            }
+
+            for (j = 0; j < current_rank_local_size; j++)
+            {
+                blocklengths[j] = 1;
+                displacements[j] = j * comm_sz + i;
+            }
+
+            MPI_Type_indexed(current_rank_local_size, blocklengths, displacements, MPI_INT, &recv_types[i]);
+            MPI_Type_commit(&recv_types[i]);
+
+            free(blocklengths);
+            free(displacements);
+        }
+
+        for (i = 0; i < local_size_data; i++)
+        {
+            int indice = i * comm_sz;
+            global_data[indice] = local_data[i];
+        }
+
+        for (i = 1; i < comm_sz; i++)
+        {
+            MPI_Recv(global_data, 1, recv_types[i], i, i, comm, MPI_STATUS_IGNORE);
+            MPI_Type_free(&recv_types[i]);
+        }
+        MPI_Type_free(&recv_types[0]);
+        free(recv_types);
+    }
+    else
+    {
+        MPI_Send(local_data, local_size_data, MPI_INT, 0, my_rank, comm);
+    }
+
+    MPI_Scatterv(global_data, send_counts, displs, MPI_INT, local_data, local_size_data, MPI_INT, 0, comm);
+
+    end_time = MPI_Wtime();
+
+    MPI_Reduce(&start_time, &global_start_time, 1, MPI_DOUBLE, MPI_MIN, 0, comm);
+    MPI_Reduce(&end_time, &global_end_time, 1, MPI_DOUBLE, MPI_MAX, 0, comm);
+
+    if (my_rank == 0)
+    {
+        elapsed_time = global_end_time - global_start_time;
+        printf("Para ir de uma distribuicao ciclica para statica demorou: %.5lfs\n", elapsed_time);
+    }
+
+    MPI_Barrier(comm);
+    int check_block = is_block_distribution(local_data, local_size_data, my_rank, comm_sz, size_data);
+    if (check_block)
+        printf("Processo %d: Distribuição em bloco correta.\n", my_rank);
+    else
+        printf("Processo %d: Distribuição em bloco incorreta.\n", my_rank);
+
+    if (my_rank == 0)
     {
         free(global_data);
         free(send_counts);
