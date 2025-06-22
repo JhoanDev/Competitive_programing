@@ -6,8 +6,8 @@
 #define comm MPI_COMM_WORLD
 
 void gen_data(int *array, int size);
-int is_cyclic_distribution(int *local_data, int local_size, int my_rank, int comm_sz);
-int is_block_distribution(int *local_data, int local_size, int my_rank, int comm_sz, int size_data);
+void check_cyclic_distribution(int *local_data, int local_size, int my_rank, int comm_sz);
+void check_block_distribution(int *local_data, int local_size, int my_rank, int comm_sz, int size_data);
 
 int main(int argc, char *argv[])
 {
@@ -113,27 +113,21 @@ int main(int argc, char *argv[])
     if (my_rank == 0)
     {
         elapsed_time = global_end_time - global_start_time;
-        printf("Para ir de uma distribuicao statica para ciclica demorou: %.5lfs\n", elapsed_time);
+        printf("\nPara ir de uma distribuicao statica para ciclica demorou: %.5lfs\n", elapsed_time);
     }
 
     MPI_Barrier(comm);
-    int check_cyclic = is_cyclic_distribution(local_data, local_size_data, my_rank, comm_sz);
-    if (check_cyclic)
-        printf("Processo %d: Distribuição cíclica correta.\n", my_rank);
-    else
-        printf("Processo %d: Distribuição cíclica incorreta.\n", my_rank);
-
+    check_cyclic_distribution(local_data, local_size_data, my_rank, comm_sz);
     MPI_Barrier(comm);
+
     start_time = MPI_Wtime();
 
     if (my_rank == 0)
     {
         MPI_Datatype *recv_types = (MPI_Datatype *)malloc(comm_sz * sizeof(MPI_Datatype));
         if (recv_types == NULL)
-        {
-            fprintf(stderr, "Process 0: Memory allocation error for recv_types.\n");
             MPI_Abort(comm, 1);
-        }
+        
 
         for (i = 0; i < comm_sz; i++)
         {
@@ -142,10 +136,7 @@ int main(int argc, char *argv[])
             int *displacements = (int *)malloc(current_rank_local_size * sizeof(int));
 
             if (blocklengths == NULL || displacements == NULL)
-            {
-                fprintf(stderr, "Process 0: Memory allocation error for blocklengths/displacements for rank %d.\n", i);
                 MPI_Abort(comm, 1);
-            }
 
             for (j = 0; j < current_rank_local_size; j++)
             {
@@ -189,15 +180,12 @@ int main(int argc, char *argv[])
     if (my_rank == 0)
     {
         elapsed_time = global_end_time - global_start_time;
-        printf("Para ir de uma distribuicao ciclica para statica demorou: %.5lfs\n", elapsed_time);
+        printf("\nPara ir de uma distribuicao ciclica para statica demorou: %.5lfs\n", elapsed_time);
     }
 
     MPI_Barrier(comm);
-    int check_block = is_block_distribution(local_data, local_size_data, my_rank, comm_sz, size_data);
-    if (check_block)
-        printf("Processo %d: Distribuição em bloco correta.\n", my_rank);
-    else
-        printf("Processo %d: Distribuição em bloco incorreta.\n", my_rank);
+    check_block_distribution(local_data, local_size_data, my_rank, comm_sz, size_data);
+    MPI_Barrier(comm);
 
     if (my_rank == 0)
     {
@@ -221,26 +209,54 @@ void gen_data(int *array, int size)
     }
 }
 
-int is_block_distribution(int *local_data, int local_size, int my_rank, int comm_sz, int size_data)
+void check_cyclic_distribution(int *local_data, int local_size, int my_rank, int comm_sz)
+{
+    int local_flag = 0;
+    for (int i = 0; i < local_size; i++)
+    {
+        if (local_data[i] == my_rank + i * comm_sz)
+            local_flag = 1;
+        else
+        {
+            local_flag = 0;
+            break;
+        }
+    }
+
+    int global_flag = 0;
+    MPI_Reduce(&local_flag, &global_flag, 1, MPI_INT, MPI_SUM, 0, comm);
+
+    if (my_rank == 0)
+    {
+        if (global_flag == comm_sz)
+            printf("Distribuição cíclica correta para todos os processos.\n");
+        else
+            printf("Erro na distribuição cíclica em algum processo.\n");
+    }
+}
+
+void check_block_distribution(int *local_data, int local_size, int my_rank, int comm_sz, int size_data)
 {
     int rest = size_data % comm_sz;
-
     int start_index = (size_data / comm_sz) * my_rank + (my_rank < rest ? my_rank : rest);
-
+    int local_flag = 1; 
     for (int i = 0; i < local_size; i++)
     {
         if (local_data[i] != start_index + i)
-            return 0;
+        {
+            local_flag = 0;
+            break;
+        }
     }
-    return 1;
-}
 
-int is_cyclic_distribution(int *local_data, int local_size, int my_rank, int comm_sz)
-{
-    for (int i = 0; i < local_size; i++)
+    int global_flag = 0;
+    MPI_Reduce(&local_flag, &global_flag, 1, MPI_INT, MPI_SUM, 0, comm);
+
+    if (my_rank == 0)
     {
-        if (local_data[i] != my_rank + i * comm_sz)
-            return 0;
+        if (global_flag == comm_sz)
+            printf("Distribuição em bloco correta para todos os processos.\n");
+        else
+            printf("Erro na distribuição em bloco em algum processo.\n");
     }
-    return 1;
 }
