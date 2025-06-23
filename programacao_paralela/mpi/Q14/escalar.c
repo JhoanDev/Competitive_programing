@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     long long int produto_seq = 0;
     if (my_rank == 0)
     {
-        srand(time(NULL));
+        srand(time(NULL)); 
         array_a = gen_array(size_array);
         array_b = gen_array(size_array);
         for (i = 0; i < size_array; i++)
@@ -63,30 +63,9 @@ int main(int argc, char *argv[])
 
     local_array_a = (int *)malloc(sizeof(int) * chunk_size);
     local_array_b = (int *)malloc(sizeof(int) * chunk_size);
-    srand(time(NULL) + my_rank);
 
-    if (my_rank == 0)
-    {
-        for (i = 1; i < comm_sz; i++)
-        {
-            MPI_Send((array_a + (chunk_size * i)), chunk_size, MPI_INT, i, 0, comm);
-            MPI_Send((array_b + (chunk_size * i)), chunk_size, MPI_INT, i, 1, comm);
-        }
-
-        for (i = 0; i < chunk_size; i++)
-        {
-            local_array_a[i] = array_a[i];
-            local_array_b[i] = array_b[i];
-        }
-
-        free(array_a);
-        free(array_b);
-    }
-    else
-    {
-        MPI_Recv(local_array_a, chunk_size, MPI_INT, 0, 0, comm, MPI_STATUS_IGNORE);
-        MPI_Recv(local_array_b, chunk_size, MPI_INT, 0, 1, comm, MPI_STATUS_IGNORE);
-    }
+    MPI_Scatter(array_a, chunk_size, MPI_INT, local_array_a, chunk_size, MPI_INT, 0, comm);
+    MPI_Scatter(array_b, chunk_size, MPI_INT, local_array_b, chunk_size, MPI_INT, 0, comm);
 
     local_prod_esc = 0;
     for (i = 0; i < chunk_size; i++)
@@ -109,6 +88,8 @@ int main(int argc, char *argv[])
         else
             printf("Erro: resultados divergentes!\n");
         printf("Tempo de execucao paralelo: %f segundos\n", max_time - min_time);
+        free(array_a);
+        free(array_b);
     }
 
     MPI_Finalize();
