@@ -2,10 +2,10 @@
 
 NP=4 
 EXEC=main
-BIN_COUNT=10      # Número de caixas (bins)
-MIN_MEAS=0.0      # Valor mínimo da medição
-MAX_MEAS=100.0    # Valor máximo da medição
-DATA_COUNT=1000000 # Número total de dados a serem gerados
+BIN_COUNT=10      
+MIN_MEAS=0.0    
+MAX_MEAS=100.0    
+DATA_COUNT=100
 
 echo "Limpando e compilando..."
 make clean && make
