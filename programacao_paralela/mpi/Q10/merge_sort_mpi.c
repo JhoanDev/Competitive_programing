@@ -167,6 +167,7 @@ void gen_data(int *array, int size)
         array[i] = (int)(max * (rand() / (double)RAND_MAX));
     }
 }
+
 void merge(int arr[], int inicio, int meio, int fim)
 {
     int i, j, k;

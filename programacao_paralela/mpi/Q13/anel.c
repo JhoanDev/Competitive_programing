@@ -42,22 +42,38 @@ int main(int argc, char *argv[])
     }
 
     if (my_rank == 0)
-        saida = (char **)malloc((mensagem * 3) * sizeof(char *));
+        saida = (char **)malloc((mensagem * 5) * sizeof(char *));
 
     source = (my_rank - 1 + comm_sz) % comm_sz;
     dest = (my_rank + 1) % comm_sz;
     i = comm_sz;
 
-    while (flag)
+    while (flag < comm_sz)
     {
         if (my_rank == (i % comm_sz))
         {
             char *buffer = (char *)malloc(100 * sizeof(char));
-            snprintf(buffer, 100, "[Processo %d] Enviando valor %d para o processo %d\n",
-                     my_rank, --mensagem, dest);
-
-            MPI_Send(&mensagem, 1, MPI_INT, dest, i, comm);
-
+            if (mensagem == 0)
+            {
+                if (flag < comm_sz - 1)
+                {
+                    snprintf(buffer, 100, "[Processo %d] Enviando valor %d para o processo %d, e encerrando\n",
+                             my_rank, mensagem, dest);
+                    MPI_Send(&mensagem, 1, MPI_INT, dest, i, comm);
+                }
+                else
+                {
+                    snprintf(buffer, 100, "[Processo %d] Recebeu a ultima mensagem e encerrou\n",
+                             my_rank);
+                }
+                flag++;
+            }
+            else
+            {
+                snprintf(buffer, 100, "[Processo %d] Enviando valor %d para o processo %d\n",
+                         my_rank, --mensagem, dest);
+                MPI_Send(&mensagem, 1, MPI_INT, dest, i, comm);
+            }
             if (my_rank != 0)
             {
                 MPI_Send(buffer, 100, MPI_CHAR, 0, my_rank, comm);
@@ -71,23 +87,22 @@ int main(int argc, char *argv[])
 
         if (my_rank == ((i + 1) % comm_sz))
         {
-            MPI_Recv(&mensagem, 1, MPI_INT, source, i, comm, MPI_STATUS_IGNORE);
-
-            char *buffer = (char *)malloc(100 * sizeof(char));
-            snprintf(buffer, 100, "[Processo %d] Recebeu valor %d do processo %d\n",
-                     my_rank, mensagem, source);
-
-            if (mensagem < 0)
-                flag = 0;
-
-            if (my_rank != 0)
+            if (flag < comm_sz - 1)
             {
-                MPI_Send(buffer, 100, MPI_CHAR, 0, my_rank, comm);
-                free(buffer);
-            }
-            else
-            {
-                saida[qnt_saidas++] = buffer;
+                MPI_Recv(&mensagem, 1, MPI_INT, source, i, comm, MPI_STATUS_IGNORE);
+                char *buffer = (char *)malloc(100 * sizeof(char));
+                snprintf(buffer, 100, "[Processo %d] Recebeu valor %d do processo %d\n",
+                         my_rank, mensagem, source);
+
+                if (my_rank != 0)
+                {
+                    MPI_Send(buffer, 100, MPI_CHAR, 0, my_rank, comm);
+                    free(buffer);
+                }
+                else
+                {
+                    saida[qnt_saidas++] = buffer;
+                }
             }
         }
 
@@ -108,7 +123,11 @@ int main(int argc, char *argv[])
             }
         }
 
-        MPI_Bcast(&flag, 1, MPI_INT, ((i + 1) % comm_sz), comm);
+        MPI_Bcast(&flag, 1, MPI_INT, (i % comm_sz), comm);
+        if (my_rank == (i % comm_sz) && my_rank != 0)
+        {
+            /* code */
+        }
 
         i++;
     }

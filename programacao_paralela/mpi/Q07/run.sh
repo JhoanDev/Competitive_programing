@@ -4,4 +4,5 @@ VAR=1234567890
 EXEC=main
 
 make clean && make
+echo "Executando com $VAR lançamentos"
 mpirun -np $NP ./$EXEC $VAR 

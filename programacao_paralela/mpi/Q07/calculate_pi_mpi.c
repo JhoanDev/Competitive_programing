@@ -14,20 +14,17 @@ int main(int argc, char *argv[])
     ui seed;
     double x, y;
     double start_time, end_time, min_start_time, max_end_time;
-
     if (argc != 2)
     {
         fprintf(stderr, "Uso: %s <lancamentos totais>\n", argv[0]);
         exit(1);
     }
-
     lancamentos_totais = atoll(argv[1]);
     if (lancamentos_totais <= 0)
     {
         fprintf(stderr, "Erro: a quantidade de lancamentos tem que ser positiva\n");
         exit(1);
     }
-
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);

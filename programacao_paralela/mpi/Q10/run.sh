@@ -1,5 +1,5 @@
 #!/bin/bash
-NP=8
+NP=7
 EXEC=main
 SIZE=123456789
 
