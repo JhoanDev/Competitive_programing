@@ -31,7 +31,7 @@ void all_reduce_borboleta(int *soma_local, int my_rank, int comm_sz)
     int i;
     int aux;
     int potencia = 1;
-    while (potencia < comm_sz)
+    while (potencia <= comm_sz)
         potencia <<= 1;
     potencia >>= 1;
     int sobrou = comm_sz - potencia;

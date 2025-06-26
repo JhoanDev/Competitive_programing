@@ -1,5 +1,5 @@
 #!/bin/bash
-NP=7
+NP=5
 EXEC=main
 
 make clean && make
