@@ -10,7 +10,8 @@ void reduce_arvore(long long int *soma_local, int my_rank, int comm_sz);
 
 int main(int argc, char *argv[])
 {
-    int my_rank, comm_sz, size_array, *local_array_a = NULL, *local_array_b = NULL, *array_a = NULL, *array_b = NULL, chunk_size, i;
+    int my_rank, comm_sz, size_array, *local_array_a = NULL,
+    *local_array_b = NULL, *array_a = NULL, *array_b = NULL, chunk_size, i;
     long long int local_prod_esc;
     double start_time, end_time, min_time, max_time;
 
@@ -32,7 +33,8 @@ int main(int argc, char *argv[])
             size_array = atoi(argv[1]);
             if (size_array <= 0 || size_array % comm_sz != 0)
             {
-                fprintf(stderr, "Erro: O tamanho do array deve ser um número positivo e divisivel pelo numero de processos.\n");
+                fprintf(stderr,
+                        "Erro: O tamanho do array deve ser um número positivo e divisivel pelo numero de processos.\n");
                 size_array = -1;
             }
         }
@@ -49,7 +51,7 @@ int main(int argc, char *argv[])
     long long int produto_seq = 0;
     if (my_rank == 0)
     {
-        srand(time(NULL)); 
+        srand(time(NULL));
         array_a = gen_array(size_array);
         array_b = gen_array(size_array);
         for (i = 0; i < size_array; i++)

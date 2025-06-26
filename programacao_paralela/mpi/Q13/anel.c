@@ -124,11 +124,6 @@ int main(int argc, char *argv[])
         }
 
         MPI_Bcast(&flag, 1, MPI_INT, (i % comm_sz), comm);
-        if (my_rank == (i % comm_sz) && my_rank != 0)
-        {
-            /* code */
-        }
-
         i++;
     }
 
