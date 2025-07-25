@@ -1,0 +1,8 @@
+#!/bin/bash
+THREADS=2560
+QNT_TRAP=256000000000
+A=0;
+B=10;
+EXEC=main
+
+./main $THREADS $QNT_TRAP $A $B 
