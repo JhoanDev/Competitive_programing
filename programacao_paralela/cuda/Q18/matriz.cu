@@ -3,7 +3,7 @@
 #include <cuda_runtime.h>
 #include <pthread.h>
 
-#define N 1024  // Tamanho da matriz (N x N)
+#define N 16384  // Tamanho da matriz (N x N)
 
 // Estrutura para passar dados para as threads
 typedef struct {
@@ -98,8 +98,8 @@ int main() {
         pthread_join(threads[i], NULL);
     }
 
-    printf("C[0] = %f\n", C[0]);                    // Esperado: 3.0
-    printf("C[N*N-1] = %f\n", C[N * N - 1]);        // Esperado: 3.0
+    printf("C[0] = %f\n", C[0]);                    
+    printf("C[N*N-1] = %f\n", C[N * N - 1]);        
 
     free(A);
     free(B);
