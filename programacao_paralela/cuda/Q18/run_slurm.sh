@@ -19,4 +19,4 @@ module load cuda/12.6_sequana
 
 nvcc -arch=sm_70 -o main_cuda.exe add_matrices_multigpu.cu
 
-time srun -n 1 ./main_cuda.exe
+time srun -n 1 ./main_cuda.exe 22222
