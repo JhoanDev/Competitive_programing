@@ -19,4 +19,4 @@ module load cuda/12.6_sequana
 
 nvcc -arch=sm_70 -o main_cuda.exe trap_integral.cu
 
-time srun ./main_cuda.exe 4096 409600000000 0 100
+time srun -n 1 ./main_cuda.exe 4096 409600000000 0 100

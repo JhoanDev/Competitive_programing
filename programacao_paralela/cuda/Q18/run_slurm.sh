@@ -12,11 +12,11 @@
 echo "NODES: $SLURM_JOB_NODELIST"
 echo "GPUs alocadas: $CUDA_VISIBLE_DEVICES"
 
-cd /scratch/pex1272-ufersa/jhoan.oliveira/Competitive_programing/programacao_paralela/cuda/Q16
+cd /scratch/pex1272-ufersa/jhoan.oliveira/Competitive_programing/programacao_paralela/cuda/Q18
 
 module load gcc/12.4.0_sequana
 module load cuda/12.6_sequana
 
 nvcc -arch=sm_70 -o main_cuda.exe add_matrices_multigpu.cu
 
-time srun ./main_cuda.exe
+time srun -n 1 ./main_cuda.exe

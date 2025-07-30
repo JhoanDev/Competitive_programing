@@ -19,4 +19,4 @@ module load cuda/12.6_sequana
 
 nvcc -arch=sm_70 -o main_cuda.exe bitonic_sort.cu
 
-time srun ./main_cuda.exe 1000000000
+time srun -n 1 ./main_cuda.exe 1000000000
