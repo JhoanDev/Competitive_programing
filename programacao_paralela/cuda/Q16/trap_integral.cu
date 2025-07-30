@@ -7,13 +7,14 @@
 
 __device__ __host__ double f(double x)
 {
-    return x * x + 4; 
+    return x * x + 4;
 }
 
 __global__ void trap(const double a, const double h, const long long n, const int t, double *val_trap)
 {
     int thread_id = blockIdx.x * blockDim.x + threadIdx.x;
-    if (thread_id >= t) return;
+    if (thread_id >= t)
+        return;
 
     long long trap_per_thread = n / t;
     double local_sum = 0.0;
@@ -29,6 +30,7 @@ __global__ void trap(const double a, const double h, const long long n, const in
 
     atomicAdd(val_trap, local_sum);
 }
+
 int main(int argc, char *argv[])
 {
     if (argc != 5)
@@ -42,7 +44,8 @@ int main(int argc, char *argv[])
 
     if (count_trap % qnt_threads != 0)
     {
-        printf("Erro: A quantidade de trapézios (%lld) deve ser divisível pelo número de threads (%d).\n", count_trap, qnt_threads);
+        printf("Erro: A quantidade de trapézios (%lld) deve ser divisível pelo número de threads (%d).\n",
+               count_trap, qnt_threads);
         exit(1);
     }
 

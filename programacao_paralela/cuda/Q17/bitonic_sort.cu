@@ -124,7 +124,8 @@ int main(int argc, char *argv[])
 
     int blocksPerGrid = (tamanho_real + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
 
-    printf("Iniciando ordenação com Bitonic Sort em CUDA\tThreads por bloco: %d\tGrid de blocos: %d\n", THREADS_PER_BLOCK, blocksPerGrid);
+    printf("Iniciando ordenação com Bitonic Sort em CUDA\tThreads por bloco: %d\tGrid de blocos: %d\n",
+           THREADS_PER_BLOCK, blocksPerGrid);
 
     for (int bf_size = 2; bf_size <= tamanho_real; bf_size *= 2)
     {
@@ -133,7 +134,7 @@ int main(int argc, char *argv[])
             bitonic_sort<<<blocksPerGrid, THREADS_PER_BLOCK>>>(gpu_array, stage, bf_size);
         }
     }
-    
+
     cudaMemcpy(array, gpu_array, tamanho_bytes, cudaMemcpyDeviceToHost);
     if (tamanho_real <= 32)
     {
