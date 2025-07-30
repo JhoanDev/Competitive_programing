@@ -17,6 +17,6 @@ cd /scratch/pex1272-ufersa/jhoan.oliveira/Competitive_programing/programacao_par
 module load gcc/12.4.0_sequana
 module load cuda/12.6_sequana
 
-nvcc -arch=sm_70 -o main_cuda.exe add_matrices_multigpu.cu
+nvcc -arch=sm_70 -o main_cuda.exe matriz.cu
 
 time srun -n 1 ./main_cuda.exe 22222
