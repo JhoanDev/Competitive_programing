@@ -1,19 +1,22 @@
-#!/bin/bash
-#SBATCH --nodes=1
-#SBATCH --time=00:10:00
-#SBATCH --cpus-per-task=4
-#SBATCH --gpus-per-node=1
-#SBATCH -p sequana_gpu_dev
-#SBATCH -J integral_cuda
-#SBATCH --exclusive
+    #!/bin/bash
 
-echo "NODES: $SLURM_JOB_NODELIST"
+    #SBATCH --nodes=1
+    #SBATCH --time=00:10:00
+    #SBATCH --cpus-per-task=1
+    #SBATCH --gpus-per-node=1
+    #SBATCH -p sequana_gpu_dev
+    #SBATCH -J integral_cuda
+    #SBATCH --exclusive
+    #SBATCH --output=saida_cuda_%j.out
+    #SBATCH --error=erro_cuda_%j.err
 
-cd /prj/pex1272-ufersa/jhoan.oliveira/Competitive_programing/programacao_paralela/cuda/Q16
+    echo "NODES: $SLURM_JOB_NODELIST"
 
-module load gcc/14.2.0_sequana
-module load cuda/12.6_sequana
+    cd /scratch/pex1272-ufersa/jhoan.oliveira/Competitive_programing/programacao_paralela/cuda/Q16
 
-nvcc -o main_cuda.exe trap_integral.cu
+    module load gcc/12.4.0_sequana
+    module load cuda/12.6_sequana
 
-srun ./main_cuda.exe 1048576 1000000000 0 100
+    nvcc -arch=sm_70 -o main_cuda.exe trap_integral.cu
+
+    time srun ./main_cuda.exe 4096 409600000000 0 100
