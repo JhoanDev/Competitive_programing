@@ -2,12 +2,14 @@
 
 using namespace std;
 
-#define _ ios_base::sync_with_stdio(0); cin.tie(0);
+#define _ \
+    ios_base::sync_with_stdio(0); \
+    cin.tie(0);
 #define endl '\n'
 
 int main()
 {
-    _
+    _ 
     int soma_ant = -9999999;
     int maior = -9999999;
     int cont = 0, i;
