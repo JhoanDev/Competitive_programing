@@ -1,0 +1,28 @@
+---
+# Configuration for Clang-Format matching your style
+Language: Cpp
+BasedOnStyle: LLVM
+
+# Indentation and Tab options
+UseTab: Never
+IndentWidth: 4
+TabWidth: 4
+
+# Braces style: Allman (new line for braces)
+BreakBeforeBraces: Allman
+
+# Column limit: 0 disables automatic line wrapping/reflowing
+ColumnLimit: 0
+
+# Prevent long whitespace padding in multi-line macros (e.g. fastio)
+AlignEscapedNewlines: Left
+
+# Spaces and alignment options
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesInParentheses: false
+PointerAlignment: Left
+
+# Do not sort includes automatically (keeps bits/stdc++.h at the top)
+SortIncludes: false
+...
