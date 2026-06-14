@@ -12,9 +12,6 @@ using pll = pair<ll, ll>;
 using vi = vector<int>;
 using vll = vector<ll>;
 
-constexpr int INF = 0x3f3f3f3f;
-constexpr ll LINF = 0x3f3f3f3f3f3f3f3fLL;
-
 #define fastio                        \
     ios_base::sync_with_stdio(false); \
     cin.tie(NULL);
@@ -22,13 +19,26 @@ constexpr ll LINF = 0x3f3f3f3f3f3f3f3fLL;
 #define sz(x) ssize(x)
 #define endl '\n'
 
-void solve()
+ll solve(int num)
 {
+    int ant = 0, atual = 1, res, i;
+    for (i = 0; i < num; i++)
+    {
+        res = ant + atual;
+        ant = atual;
+        atual = res;
+    }
+    return res;
 }
 
 int main()
 {
     fastio;
+    int n;
+    while (cin >> n && n != 0)
+    {
+        cout << solve(n) << endl;
+    }
 
     return 0;
 }
