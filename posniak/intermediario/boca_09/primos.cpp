@@ -15,6 +15,7 @@ using vll = vector<ll>;
 #define all(x) (x).begin(), (x).end()
 #define sz(x) ssize(x)
 #define endl '\n'
+const int MAXN = 10000000;
 
 bool primo(int num)
 {
@@ -38,7 +39,7 @@ bool primo(int num)
 
 void solve(vi& primos)
 {
-    for (int i = 1; i <= 1000000; i++)
+    for (int i = 1; i <= MAXN; i++)
     {
         if (primo(i))
         {
@@ -74,8 +75,7 @@ int main()
     cin >> consultas;
     vi gemeos;
     primos_gemeos(primos, gemeos);
-    vi prefixos(1000001, 0);
-
+    vi prefixos(MAXN + 1, 0);
     for (auto& g : gemeos)
         prefixos[g] = 1;
     for (int i = 1; i < 1000001; i++)
